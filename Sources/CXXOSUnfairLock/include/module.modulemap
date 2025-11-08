@@ -1,0 +1,5 @@
+module CXXOSUnfairLock {
+	requires cplusplus
+	header "SFBOSUnfairLock.hpp"
+	export *
+}

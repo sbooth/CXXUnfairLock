@@ -1,0 +1,96 @@
+//
+// Copyright © 2020-2025 Stephen F. Booth
+// Part of https://github.com/sbooth/CXXOSUnfairLock
+// MIT license
+//
+
+#pragma once
+
+#import <os/availability.h>
+#import <os/lock.h>
+
+namespace SFB {
+
+/// A wrapper around @c os_unfair_lock satisfying the @c Lockable requirements.
+///
+/// This class may be used with @c std::lock_guard for a scope-based lock.
+class OSUnfairLock final
+{
+
+public:
+
+	// MARK: Creation and Destruction
+
+	/// Creates a new unfair lock.
+	OSUnfairLock() noexcept = default;
+
+	// This class is non-copyable
+	OSUnfairLock(const OSUnfairLock&) = delete;
+
+	// This class is non-movable
+	OSUnfairLock(const OSUnfairLock&&) = delete;
+
+	// This class is non-assignable
+	OSUnfairLock& operator=(const OSUnfairLock&) = delete;
+
+	// This class is non-move assignable
+	OSUnfairLock& operator=(const OSUnfairLock&&) = delete;
+
+	/// Destroys the unfair lock.
+	~OSUnfairLock() noexcept = default;
+
+	// MARK: Lockable
+
+	/// Locks the lock.
+	void lock() noexcept
+	{
+		os_unfair_lock_lock(&lock_);
+	}
+
+	/// Locks the lock.
+	/// @param flags Flags to alter the behavior of the lock.
+	API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0))
+	void lock(os_unfair_lock_flags_t flags) noexcept
+	{
+		os_unfair_lock_lock_with_flags(&lock_, flags);
+	}
+
+	/// Unlocks the lock.
+	void unlock() noexcept
+	{
+		os_unfair_lock_unlock(&lock_);
+	}
+
+	/// Attempts to lock the lock.
+	/// @return @c true if the lock was successfully locked, @c false if the lock was already locked.
+	bool try_lock() noexcept
+	{
+		return os_unfair_lock_trylock(&lock_);
+	}
+
+	// MARK: Ownership
+
+	/// Asserts that the calling thread is the current owner of the lock.
+	///
+	/// If the lock is currently owned by the calling thread, this function returns.
+	///
+	/// If the lock is unlocked or owned by a different thread, this function
+	/// asserts and terminates the process.
+	void assert_owner() noexcept;
+
+	///	Asserts that the calling thread is not the current owner of the lock.
+	///
+	///	If the lock is unlocked or owned by a different thread, this function returns.
+	///
+	///	If the lock is currently owned by the current thread, this function asserts
+	///	and terminates the process.
+	void assert_not_owner() noexcept;
+
+private:
+
+	/// The primitive lock.
+	os_unfair_lock lock_{OS_UNFAIR_LOCK_INIT};
+
+};
+
+} /* namespace SFB */
