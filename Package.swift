@@ -29,5 +29,6 @@ let package = Package(
 				.interoperabilityMode(.Cxx),
 			]
 		),
-	]
+	],
+	cxxLanguageStandard: .cxx11
 )
