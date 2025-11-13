@@ -11,14 +11,11 @@
 
 namespace SFB {
 
-/// A wrapper around @c os_unfair_lock satisfying the @c Lockable requirements.
+/// A wrapper around @c os_unfair_lock satisfying the @c Lockable C++ named requirement.
 ///
 /// This class may be used with @c std::lock_guard for a scope-based lock.
-class OSUnfairLock final
-{
-
+class OSUnfairLock final {
 public:
-
 	// MARK: Creation and Destruction
 
 	/// Creates a new unfair lock.
@@ -87,10 +84,8 @@ public:
 	void assert_not_owner() noexcept;
 
 private:
-
 	/// The primitive lock.
 	os_unfair_lock lock_{OS_UNFAIR_LOCK_INIT};
-
 };
 
 } /* namespace SFB */
