@@ -2,6 +2,9 @@
 
 An [`os_unfair_lock`](https://developer.apple.com/documentation/os/1646466-os_unfair_lock_lock) wrapper satisfying the [`Lockable`](https://en.cppreference.com/w/cpp/named_req/Lockable) requirements.
 
+> [!NOTE]
+> C++11 is required.
+
 ## Installation
 
 ### Swift Package Manager
