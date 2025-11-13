@@ -11,9 +11,9 @@
 
 namespace SFB {
 
-/// A wrapper around @c os_unfair_lock satisfying the @c Lockable requirements.
+/// A wrapper around os_unfair_lock satisfying the Lockable requirements.
 ///
-/// This class may be used with @c std::lock_guard for a scope-based lock.
+/// This class may be used with std::lock_guard for a scope-based lock.
 class OSUnfairLock final {
 public:
 	// MARK: Creation and Destruction
@@ -59,7 +59,7 @@ public:
 	}
 
 	/// Attempts to lock the lock.
-	/// @return @c true if the lock was successfully locked, @c false if the lock was already locked.
+	/// @return true if the lock was successfully locked, false if the lock was already locked.
 	bool try_lock() noexcept
 	{
 		return os_unfair_lock_trylock(&lock_);
@@ -73,7 +73,10 @@ public:
 	///
 	/// If the lock is unlocked or owned by a different thread, this function
 	/// asserts and terminates the process.
-	void assert_owner() noexcept;
+	void assert_owner() noexcept
+	{
+		os_unfair_lock_assert_owner(&lock_);
+	}
 
 	///	Asserts that the calling thread is not the current owner of the lock.
 	///
@@ -81,7 +84,10 @@ public:
 	///
 	///	If the lock is currently owned by the current thread, this function asserts
 	///	and terminates the process.
-	void assert_not_owner() noexcept;
+	void assert_not_owner() noexcept
+	{
+		os_unfair_lock_assert_not_owner(&lock_);
+	}
 
 private:
 	/// The primitive lock.
