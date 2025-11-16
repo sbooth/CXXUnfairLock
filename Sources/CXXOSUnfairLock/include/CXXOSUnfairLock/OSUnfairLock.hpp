@@ -9,7 +9,7 @@
 #import <os/availability.h>
 #import <os/lock.h>
 
-namespace SFB {
+namespace CXXOSUnfairLock {
 
 /// A wrapper around os_unfair_lock satisfying the Lockable requirements.
 ///
@@ -94,4 +94,4 @@ private:
 	os_unfair_lock lock_{OS_UNFAIR_LOCK_INIT};
 };
 
-} /* namespace SFB */
+} /* namespace CXXOSUnfairLock */
