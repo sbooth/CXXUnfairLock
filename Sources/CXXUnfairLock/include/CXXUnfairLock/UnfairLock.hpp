@@ -21,17 +21,11 @@ public:
 	/// Creates a new unfair lock.
 	UnfairLock() noexcept = default;
 
-	// This class is non-copyable
 	UnfairLock(const UnfairLock&) = delete;
-
-	// This class is non-movable
-	UnfairLock(const UnfairLock&&) = delete;
-
-	// This class is non-assignable
 	UnfairLock& operator=(const UnfairLock&) = delete;
 
-	// This class is non-move assignable
-	UnfairLock& operator=(const UnfairLock&&) = delete;
+//	UnfairLock(const UnfairLock&&) = delete;
+//	UnfairLock& operator=(const UnfairLock&&) = delete;
 
 	/// Destroys the unfair lock.
 	~UnfairLock() noexcept = default;
