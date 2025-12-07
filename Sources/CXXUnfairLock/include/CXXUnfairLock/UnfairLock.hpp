@@ -14,7 +14,7 @@ namespace CXXUnfairLock {
 /// A wrapper around os_unfair_lock satisfying the Lockable requirements.
 ///
 /// This class may be used with std::lock_guard for a scope-based lock.
-class UnfairLock final {
+class __attribute__((capability("mutex"))) UnfairLock final {
 public:
 	// MARK: Creation and Destruction
 
@@ -39,7 +39,7 @@ public:
 	// MARK: Lockable
 
 	/// Locks the lock.
-	void lock() noexcept
+	void lock() noexcept __attribute__((acquire_capability()))
 	{
 		os_unfair_lock_lock(&lock_);
 	}
@@ -47,20 +47,20 @@ public:
 	/// Locks the lock.
 	/// @param flags Flags to alter the behavior of the lock.
 	API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0))
-	void lock(os_unfair_lock_flags_t flags) noexcept
+	void lock(os_unfair_lock_flags_t flags) noexcept __attribute__((acquire_capability()))
 	{
 		os_unfair_lock_lock_with_flags(&lock_, flags);
 	}
 
 	/// Unlocks the lock.
-	void unlock() noexcept
+	void unlock() noexcept __attribute__((release_capability()))
 	{
 		os_unfair_lock_unlock(&lock_);
 	}
 
 	/// Attempts to lock the lock.
 	/// @return true if the lock was successfully locked, false if the lock was already locked.
-	bool try_lock() noexcept
+	bool try_lock() noexcept __attribute__((try_acquire_capability(true)))
 	{
 		return os_unfair_lock_trylock(&lock_);
 	}
