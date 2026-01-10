@@ -55,7 +55,7 @@ public:
 
 	/// Attempts to lock the lock.
 	/// @return true if the lock was successfully locked, false if the lock was already locked.
-	bool try_lock() noexcept __attribute__((try_acquire_capability(true)))
+	[[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)))
 	{
 		return os_unfair_lock_trylock(&lock_);
 	}
