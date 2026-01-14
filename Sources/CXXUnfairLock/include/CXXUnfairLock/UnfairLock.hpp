@@ -70,8 +70,8 @@ public:
 	template <typename Func, typename... Args>
 	auto with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
-	/// Attempts to execute a callable within a locked scope if the lock can be
-	/// acquired immediately.
+	/// Attempts to execute a callable within a locked scope if the lock can
+	/// be acquired immediately.
 	///
 	/// Uses std::try_to_lock to attempt acquisition. If the lock is busy,
 	/// the function returns immediately without executing the callable.
