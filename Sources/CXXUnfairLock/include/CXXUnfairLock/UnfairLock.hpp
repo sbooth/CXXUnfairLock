@@ -34,31 +34,18 @@ public:
 	// MARK: Lockable
 
 	/// Locks the lock.
-	void lock() noexcept __attribute__((acquire_capability()))
-	{
-		os_unfair_lock_lock(&lock_);
-	}
+	void lock() noexcept __attribute__((acquire_capability()));
 
 	/// Locks the lock.
 	/// @param flags Flags to alter the behavior of the lock.
-	API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0))
-	void lock(os_unfair_lock_flags_t flags) noexcept __attribute__((acquire_capability()))
-	{
-		os_unfair_lock_lock_with_flags(&lock_, flags);
-	}
+	void lock(os_unfair_lock_flags_t flags) noexcept __attribute__((acquire_capability())) API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0));
 
 	/// Unlocks the lock.
-	void unlock() noexcept __attribute__((release_capability()))
-	{
-		os_unfair_lock_unlock(&lock_);
-	}
+	void unlock() noexcept __attribute__((release_capability()));
 
 	/// Attempts to lock the lock.
 	/// @return true if the lock was successfully locked, false if the lock was already locked.
-	[[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)))
-	{
-		return os_unfair_lock_trylock(&lock_);
-	}
+	[[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)));
 
 	// MARK: Ownership
 
@@ -68,10 +55,7 @@ public:
 	///
 	/// If the lock is unlocked or owned by a different thread, this function
 	/// asserts and terminates the process.
-	void assert_owner() const noexcept
-	{
-		os_unfair_lock_assert_owner(&lock_);
-	}
+	void assert_owner() const noexcept;
 
 	///	Asserts that the calling thread is not the current owner of the lock.
 	///
@@ -79,14 +63,47 @@ public:
 	///
 	///	If the lock is currently owned by the current thread, this function asserts
 	///	and terminates the process.
-	void assert_not_owner() const noexcept
-	{
-		os_unfair_lock_assert_not_owner(&lock_);
-	}
+	void assert_not_owner() const noexcept;
 
 private:
 	/// The primitive lock.
 	os_unfair_lock lock_{OS_UNFAIR_LOCK_INIT};
 };
+
+// MARK: - Implementation -
+
+// MARK: Lockable
+
+inline void UnfairLock::lock() noexcept
+{
+	os_unfair_lock_lock(&lock_);
+}
+
+inline void UnfairLock::lock(os_unfair_lock_flags_t flags) noexcept
+{
+	os_unfair_lock_lock_with_flags(&lock_, flags);
+}
+
+inline void UnfairLock::unlock() noexcept
+{
+	os_unfair_lock_unlock(&lock_);
+}
+
+inline bool UnfairLock::try_lock() noexcept
+{
+	return os_unfair_lock_trylock(&lock_);
+}
+
+// MARK: Ownership
+
+inline void UnfairLock::assert_owner() const noexcept
+{
+	os_unfair_lock_assert_owner(&lock_);
+}
+
+inline void UnfairLock::assert_not_owner() const noexcept
+{
+	os_unfair_lock_assert_not_owner(&lock_);
+}
 
 } /* namespace CXXUnfairLock */
