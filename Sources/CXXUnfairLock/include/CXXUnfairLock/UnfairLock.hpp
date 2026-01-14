@@ -55,10 +55,12 @@ public:
 
 	// MARK: Scoped Locking
 
-	/// Executes a callable within a locked scope (blocking).
+	/// Executes a callable within a locked scope.
 	///
-	/// This method acquires the lock, executes the provided function,
-	/// and ensures the lock is unlocked even if an exception is thrown.
+	/// This function blocks until the lock has been successfully acquired, then
+	/// invokes the provided callable while holding the lock. The lock is
+	/// released when the callable returns, even if it exits by throwing an
+	/// exception.
 	/// @tparam Func The type of the callable object.
 	/// @tparam Args The types of arguments to pass to the callable.
 	/// @param func The lambda, function, or functor to execute.
@@ -69,7 +71,7 @@ public:
 	auto with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
 	/// Attempts to execute a callable within a locked scope if the lock can
-	/// be acquired immediately (non-blocking).
+	/// be acquired immediately.
 	///
 	/// Uses std::try_to_lock to attempt acquisition. If the lock is busy,
 	/// the function returns immediately without executing the callable.
@@ -77,9 +79,8 @@ public:
 	/// @tparam Args The types of arguments to pass to the callable.
 	/// @param func The callable to execute if the lock is acquired.
 	/// @param args Arguments to be perfectly forwarded to the callable.
-	/// @return For non-void functions: A std::optional containing the result if successful,
-	/// otherwise std::nullopt.
-	/// @return For void functions: A boolean (true if lock was acquired and func executed).
+	/// @return For non-void functions, a std::optional containing the result of func if the lock was acquired, or std::nullopt otherwise; for void functions, a bool that is true if the lock was acquired and func executed, false otherwise.
+	/// @throw Any exception thrown by the callable.
 	template <typename Func, typename... Args>
 	auto try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
