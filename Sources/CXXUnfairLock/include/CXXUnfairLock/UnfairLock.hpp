@@ -7,6 +7,12 @@
 
 #pragma once
 
+#import <functional>
+#import <mutex>
+#import <optional>
+#import <type_traits>
+#import <utility>
+
 #import <os/availability.h>
 #import <os/lock.h>
 
@@ -46,6 +52,35 @@ public:
 	/// Attempts to lock the lock.
 	/// @return true if the lock was successfully locked, false if the lock was already locked.
 	[[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)));
+
+	// MARK: Scoped Locking
+
+	/// Executes a callable within a locked scope (blocking).
+	///
+	/// This method acquires the lock, executes the provided function,
+	/// and ensures the lock is unlocked even if an exception is thrown.
+	/// @tparam Func The type of the callable object.
+	/// @tparam Args The types of arguments to pass to the callable.
+	/// @param func The lambda, function, or functor to execute.
+	/// @param args Arguments to be perfectly forwarded to the callable.
+	/// @return The result of the callable execution.
+	/// @throw Any exception thrown by the callable.
+	template <typename Func, typename... Args>
+	auto with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
+
+	/// Attempts to execute a callable if the lock can be acquired immediately (non-blocking).
+	///
+	/// Uses std::try_to_lock to attempt acquisition. If the lock is busy,
+	/// the function returns immediately without executing the callable.
+	/// @tparam Func The type of the callable object.
+	/// @tparam Args The types of arguments to pass to the callable.
+	/// @param func The callable to execute if the lock is acquired.
+	/// @param args Arguments to be perfectly forwarded to the callable.
+	/// @return For non-void functions: A std::optional containing the result if successful,
+	/// otherwise std::nullopt.
+	/// @return For void functions: A boolean (true if lock was acquired and func executed).
+	template <typename Func, typename... Args>
+	auto try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
 	// MARK: Ownership
 
@@ -92,6 +127,36 @@ inline void UnfairLock::unlock() noexcept
 inline bool UnfairLock::try_lock() noexcept
 {
 	return os_unfair_lock_trylock(&lock_);
+}
+
+// MARK: Scoped Locking
+
+template <typename Func, typename... Args>
+inline auto UnfairLock::with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
+{
+	std::lock_guard lock{*this};
+	return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
+}
+
+template <typename Func, typename... Args>
+inline auto UnfairLock::try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
+{
+	using ReturnType = std::invoke_result_t<Func, Args...>;
+	std::unique_lock lock{*this, std::try_to_lock};
+
+	if constexpr (std::is_void_v<ReturnType>) {
+		if(lock.owns_lock()) {
+			std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
+			return true;
+		}
+		return false;
+	} else {
+		if(lock.owns_lock())
+			return std::optional<ReturnType>{
+				std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)
+			};
+		return std::optional<ReturnType>{std::nullopt};
+	}
 }
 
 // MARK: Ownership
