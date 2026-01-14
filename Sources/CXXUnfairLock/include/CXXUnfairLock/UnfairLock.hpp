@@ -68,7 +68,7 @@ public:
 	///
 	/// If the lock is unlocked or owned by a different thread, this function
 	/// asserts and terminates the process.
-	void assert_owner() noexcept
+	void assert_owner() const noexcept
 	{
 		os_unfair_lock_assert_owner(&lock_);
 	}
@@ -79,7 +79,7 @@ public:
 	///
 	///	If the lock is currently owned by the current thread, this function asserts
 	///	and terminates the process.
-	void assert_not_owner() noexcept
+	void assert_not_owner() const noexcept
 	{
 		os_unfair_lock_assert_not_owner(&lock_);
 	}
