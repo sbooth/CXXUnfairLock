@@ -73,7 +73,7 @@ public:
 	/// Attempts to execute a callable within a locked scope if the lock can be
 	/// acquired immediately.
 	///
-	/// Uses ``try_lock`` to attempt acquisition. If the lock is busy,
+	/// Uses std::try_to_lock to attempt acquisition. If the lock is busy,
 	/// the function returns immediately without executing the callable.
 	/// @tparam Func The type of the callable object.
 	/// @tparam Args The types of arguments to pass to the callable.
