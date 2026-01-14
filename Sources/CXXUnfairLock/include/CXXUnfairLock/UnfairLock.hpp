@@ -56,20 +56,29 @@ public:
 	// MARK: Scoped Locking
 
 	/// Executes a callable within a locked scope.
+	///
+	/// This function blocks until the lock has been successfully acquired, then
+	/// invokes the provided callable while holding the lock. The lock is
+	/// released when the callable returns, even if it exits by throwing an
+	/// exception.
 	/// @tparam Func The type of the callable object.
 	/// @tparam Args The types of arguments to pass to the callable.
 	/// @param func The lambda, function, or functor to execute.
-	/// @param args Arguments to pass to the callable.
+	/// @param args Arguments to be perfectly forwarded to the callable.
 	/// @return The result of the callable execution.
 	/// @throw Any exception thrown by the callable.
 	template <typename Func, typename... Args>
 	auto with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
-	/// Attempts to execute a callable within a locked scope if the lock can be acquired immediately.
+	/// Attempts to execute a callable within a locked scope if the lock can be
+	/// acquired immediately.
+	///
+	/// Uses ``try_lock`` to attempt acquisition. If the lock is busy,
+	/// the function returns immediately without executing the callable.
 	/// @tparam Func The type of the callable object.
 	/// @tparam Args The types of arguments to pass to the callable.
 	/// @param func The callable to execute if the lock is acquired.
-	/// @param args Arguments to pass to the callable.
+	/// @param args Arguments to be perfectly forwarded to the callable.
 	/// @return For non-void functions: A std::optional containing the result of func if the lock was acquired, std::nullopt otherwise.
 	/// @return For void functions: true if the lock was acquired and func executed, false otherwise.
 	/// @throw Any exception thrown by the callable.
