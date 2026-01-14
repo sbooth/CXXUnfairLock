@@ -68,17 +68,17 @@ public:
 	template <typename Func, typename... Args>
 	auto with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
-	 /// Attempts to execute a callable if the lock can be acquired immediately (non-blocking).
-	 ///
-	 /// Uses std::try_to_lock to attempt acquisition. If the lock is busy,
-	 /// the function returns immediately without executing the callable.
-	 /// @tparam Func The type of the callable object.
-	 /// @tparam Args The types of arguments to pass to the callable.
-	 /// @param func The callable to execute if the lock is acquired.
-	 /// @param args Arguments to be perfectly forwarded to the callable.
-	 /// @return For non-void functions: A std::optional containing the result if successful,
-	 /// otherwise std::nullopt.
-	 /// @return For void functions: A boolean (true if lock was acquired and func executed).
+	/// Attempts to execute a callable if the lock can be acquired immediately (non-blocking).
+	///
+	/// Uses std::try_to_lock to attempt acquisition. If the lock is busy,
+	/// the function returns immediately without executing the callable.
+	/// @tparam Func The type of the callable object.
+	/// @tparam Args The types of arguments to pass to the callable.
+	/// @param func The callable to execute if the lock is acquired.
+	/// @param args Arguments to be perfectly forwarded to the callable.
+	/// @return For non-void functions: A std::optional containing the result if successful,
+	/// otherwise std::nullopt.
+	/// @return For void functions: A boolean (true if lock was acquired and func executed).
 	template <typename Func, typename... Args>
 	auto try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
