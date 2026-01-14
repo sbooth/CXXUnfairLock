@@ -132,7 +132,7 @@ inline bool UnfairLock::try_lock() noexcept
 // MARK: Scoped Locking
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func>)
+inline auto UnfairLock::with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
 {
 	std::lock_guard lock{*this};
 	return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
