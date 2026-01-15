@@ -147,7 +147,6 @@ inline auto UnfairLock::try_with_lock(Func&& func, Args&&... args) noexcept(std:
 	using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
 	
 	std::unique_lock lock{*this, std::try_to_lock};
-
 	if(!lock)
 		return ResultType{};
 
