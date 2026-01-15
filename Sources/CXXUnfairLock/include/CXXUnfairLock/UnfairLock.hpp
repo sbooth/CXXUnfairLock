@@ -143,21 +143,21 @@ inline auto UnfairLock::with_lock(Func&& func, Args&&... args) noexcept(std::is_
 template <typename Func, typename... Args>
 inline auto UnfairLock::try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
 {
-	using ReturnType = std::invoke_result_t<Func, Args...>;
+	using ReturnType = std::invoke_result_t<Func&&, Args&&...>;
+	using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
+	
 	std::unique_lock lock{*this, std::try_to_lock};
 
+	if(!lock)
+		return ResultType{};
+
 	if constexpr (std::is_void_v<ReturnType>) {
-		if(lock.owns_lock()) {
-			std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
-			return true;
-		}
-		return false;
+		std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
+		return true;
 	} else {
-		if(lock.owns_lock())
-			return std::optional<ReturnType>{
-				std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)
-			};
-		return std::optional<ReturnType>{std::nullopt};
+		return std::optional<ReturnType>{
+			std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)
+		};
 	}
 }
 
