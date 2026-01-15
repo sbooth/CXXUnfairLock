@@ -144,16 +144,17 @@ template <typename Func, typename... Args>
 inline auto UnfairLock::try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
 {
 	using ReturnType = std::invoke_result_t<Func&&, Args&&...>;
-
+	using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
+	
 	std::unique_lock lock{*this, std::try_to_lock};
+
+	if(!lock)
+		return ResultType{};
+
 	if constexpr (std::is_void_v<ReturnType>) {
-		if(!lock)
-			return false;
 		std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 		return true;
 	} else {
-		if(!lock)
-			return std::optional<ReturnType>{std::nullopt};
 		return std::optional<ReturnType>{
 			std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)
 		};
