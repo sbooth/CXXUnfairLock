@@ -16,7 +16,7 @@
 #import <os/availability.h>
 #import <os/lock.h>
 
-namespace CXXUnfairLock {
+namespace cxx_lock {
 
 /// A wrapper around os_unfair_lock satisfying the Lockable requirements.
 ///
@@ -68,7 +68,7 @@ public:
 	/// @return The result of the callable execution.
 	/// @throw Any exception thrown by the callable.
 	template <typename Func, typename... Args>
-	auto with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
+	auto withLock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
 	/// Attempts to execute a callable within a locked scope if the lock can
 	/// be acquired immediately.
@@ -82,7 +82,7 @@ public:
 	/// @return For non-void functions, a std::optional containing the result of func if the lock was acquired, or std::nullopt otherwise; for void functions, a bool that is true if the lock was acquired and func executed, false otherwise.
 	/// @throw Any exception thrown by the callable.
 	template <typename Func, typename... Args>
-	auto try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
+	auto tryWithLock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
 	// MARK: Ownership
 
@@ -92,7 +92,7 @@ public:
 	///
 	/// If the lock is unlocked or owned by a different thread, this function
 	/// asserts and terminates the process.
-	void assert_owner() const noexcept;
+	void assertOwner() const noexcept;
 
 	///	Asserts that the calling thread is not the current owner of the lock.
 	///
@@ -100,7 +100,7 @@ public:
 	///
 	///	If the lock is currently owned by the current thread, this function asserts
 	///	and terminates the process.
-	void assert_not_owner() const noexcept;
+	void assertNotOwner() const noexcept;
 
 private:
 	/// The primitive lock.
@@ -134,14 +134,14 @@ inline bool UnfairLock::try_lock() noexcept
 // MARK: Scoped Locking
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
+inline auto UnfairLock::withLock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
 {
 	std::lock_guard lock{*this};
 	return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 }
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::try_with_lock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
+inline auto UnfairLock::tryWithLock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
 {
 	using ReturnType = std::invoke_result_t<Func&&, Args&&...>;
 	using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
@@ -162,14 +162,14 @@ inline auto UnfairLock::try_with_lock(Func&& func, Args&&... args) noexcept(std:
 
 // MARK: Ownership
 
-inline void UnfairLock::assert_owner() const noexcept
+inline void UnfairLock::assertOwner() const noexcept
 {
 	os_unfair_lock_assert_owner(&lock_);
 }
 
-inline void UnfairLock::assert_not_owner() const noexcept
+inline void UnfairLock::assertNotOwner() const noexcept
 {
 	os_unfair_lock_assert_not_owner(&lock_);
 }
 
-} /* namespace CXXUnfairLock */
+} /* namespace cxx_lock */
