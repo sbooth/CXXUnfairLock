@@ -139,10 +139,6 @@ inline auto UnfairLock::tryWithLock(Func&& func, Args&&...args) noexcept(std::is
     if (!lock)
         return ResultType{};
 
-    std::unique_lock lock{*this, std::try_to_lock};
-    if (!lock)
-        return ResultType{};
-
     if constexpr (std::is_void_v<ReturnType>) {
         std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
         return true;
