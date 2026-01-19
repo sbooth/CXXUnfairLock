@@ -6,7 +6,7 @@
 //
 
 module CXXUnfairLock {
-	requires cplusplus17
-	header "cxx_lock/UnfairLock.hpp"
-	export *
+    requires cplusplus17
+    header "cxx_lock/UnfairLock.hpp"
+    export *
 }

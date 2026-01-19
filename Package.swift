@@ -9,34 +9,31 @@
 import PackageDescription
 
 let package = Package(
-	name: "CXXUnfairLock",
-	products: [
-		// Products define the executables and libraries a package produces, making them visible to other packages.
-		.library(
-			name: "CXXUnfairLock",
-			targets: [
-				"CXXUnfairLock",
-			]
-		),
-	],
-	targets: [
-		// Targets are the basic building blocks of a package, defining a module or a test suite.
-		// Targets can depend on other targets in this package and products from dependencies.
-		.target(
-			name: "CXXUnfairLock",
-			cSettings: [
-				.headerSearchPath("include/cxx_lock"),
-			]
-		),
-		.testTarget(
-			name: "CXXUnfairLockTests",
-			dependencies: [
-				"CXXUnfairLock",
-			],
-			swiftSettings: [
-				.interoperabilityMode(.Cxx),
-			]
-		),
-	],
-	cxxLanguageStandard: .cxx17
+    name: "CXXUnfairLock",
+    products: [
+        .library(
+            name: "CXXUnfairLock",
+            targets: [
+                "CXXUnfairLock",
+            ]
+        ),
+    ],
+    targets: [
+        .target(
+            name: "CXXUnfairLock",
+            cSettings: [
+                .headerSearchPath("include/cxx_lock"),
+            ]
+        ),
+        .testTarget(
+            name: "CXXUnfairLockTests",
+            dependencies: [
+                "CXXUnfairLock",
+            ],
+            swiftSettings: [
+                .interoperabilityMode(.Cxx),
+            ]
+        ),
+    ],
+    cxxLanguageStandard: .cxx17
 )

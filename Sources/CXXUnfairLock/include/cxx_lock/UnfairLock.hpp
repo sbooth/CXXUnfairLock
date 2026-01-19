@@ -7,14 +7,14 @@
 
 #pragma once
 
+#import <os/availability.h>
+#import <os/lock.h>
+
 #import <functional>
 #import <mutex>
 #import <optional>
 #import <type_traits>
 #import <utility>
-
-#import <os/availability.h>
-#import <os/lock.h>
 
 namespace cxx_lock {
 
@@ -22,38 +22,30 @@ namespace cxx_lock {
 ///
 /// This class may be used with std::lock_guard for a scope-based lock.
 class __attribute__((capability("mutex"))) UnfairLock final {
-public:
-	// MARK: Creation and Destruction
+  public:
+    // MARK: Creation and Destruction
 
-	/// Creates a new unfair lock.
-	UnfairLock() noexcept = default;
+    /// Creates a new unfair lock.
+    UnfairLock() noexcept = default;
 
-	UnfairLock(const UnfairLock&) = delete;
-	UnfairLock& operator=(const UnfairLock&) = delete;
+    UnfairLock(const UnfairLock&) = delete;
+    UnfairLock& operator=(const UnfairLock&) = delete;
 
-//	UnfairLock(const UnfairLock&&) = delete;
-//	UnfairLock& operator=(const UnfairLock&&) = delete;
+    /// Destroys the unfair lock.
+    ~UnfairLock() noexcept = default;
 
-	/// Destroys the unfair lock.
-	~UnfairLock() noexcept = default;
+    // MARK: Lockable
 
-	// MARK: Lockable
+    /// Locks the lock.
+    void lock() noexcept __attribute__((acquire_capability()));
 
-	/// Locks the lock.
-	void lock() noexcept __attribute__((acquire_capability()));
+    /// Locks the lock.
+    /// @param flags Flags to alter the behavior of the lock.
+    void lock(os_unfair_lock_flags_t flags) noexcept __attribute__((acquire_capability()))
+    API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0));
 
-	/// Locks the lock.
-	/// @param flags Flags to alter the behavior of the lock.
-	void lock(os_unfair_lock_flags_t flags) noexcept __attribute__((acquire_capability())) API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0));
-
-	/// Unlocks the lock.
-	void unlock() noexcept __attribute__((release_capability()));
-
-	/// Attempts to lock the lock.
-	/// @return true if the lock was successfully locked, false if the lock was already locked.
-	[[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)));
-
-	// MARK: Scoped Locking
+    /// Unlocks the lock.
+    void unlock() noexcept __attribute__((release_capability()));
 
 	/// Executes a callable within a locked scope.
 	///
@@ -84,9 +76,9 @@ public:
 	template <typename Func, typename... Args>
 	auto tryWithLock(Func&& func, Args&&... args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
-	// MARK: Ownership
+    // MARK: Ownership
 
-	/// Asserts that the calling thread is the current owner of the lock.
+    /// Asserts that the calling thread is the current owner of the lock.
 	///
 	/// If the lock is currently owned by the calling thread, this function returns.
 	///
@@ -104,31 +96,27 @@ public:
 
 private:
 	/// The primitive lock.
-	os_unfair_lock lock_{OS_UNFAIR_LOCK_INIT};
+    os_unfair_lock lock_{OS_UNFAIR_LOCK_INIT};
 };
 
 // MARK: - Implementation -
 
 // MARK: Lockable
 
-inline void UnfairLock::lock() noexcept
-{
-	os_unfair_lock_lock(&lock_);
+inline void UnfairLock::lock() noexcept {
+    os_unfair_lock_lock(&lock_);
 }
 
-inline void UnfairLock::lock(os_unfair_lock_flags_t flags) noexcept
-{
-	os_unfair_lock_lock_with_flags(&lock_, flags);
+inline void UnfairLock::lock(os_unfair_lock_flags_t flags) noexcept {
+    os_unfair_lock_lock_with_flags(&lock_, flags);
 }
 
-inline void UnfairLock::unlock() noexcept
-{
-	os_unfair_lock_unlock(&lock_);
+inline void UnfairLock::unlock() noexcept {
+    os_unfair_lock_unlock(&lock_);
 }
 
-inline bool UnfairLock::try_lock() noexcept
-{
-	return os_unfair_lock_trylock(&lock_);
+inline bool UnfairLock::try_lock() noexcept {
+    return os_unfair_lock_trylock(&lock_);
 }
 
 // MARK: Scoped Locking
@@ -150,14 +138,16 @@ inline auto UnfairLock::tryWithLock(Func&& func, Args&&... args) noexcept(std::i
 	if(!lock)
 		return ResultType{};
 
-	if constexpr (std::is_void_v<ReturnType>) {
-		std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
-		return true;
-	} else {
-		return std::optional<ReturnType>{
-			std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)
-		};
-	}
+    std::unique_lock lock{*this, std::try_to_lock};
+    if (!lock)
+        return ResultType{};
+
+    if constexpr (std::is_void_v<ReturnType>) {
+        std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
+        return true;
+    } else {
+        return std::optional<ReturnType>{std::invoke(std::forward<Func>(func), std::forward<Args>(args)...)};
+    }
 }
 
 // MARK: Ownership
