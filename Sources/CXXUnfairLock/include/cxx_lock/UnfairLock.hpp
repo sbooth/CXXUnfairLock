@@ -49,10 +49,8 @@ class __attribute__((capability("mutex"))) UnfairLock final {
 
     /// Executes a callable within a locked scope.
     ///
-    /// This function blocks until the lock has been successfully acquired, then
-    /// invokes the provided callable while holding the lock. The lock is
-    /// released when the callable returns, even if it exits by throwing an
-    /// exception.
+    /// This function blocks until the lock has been successfully acquired, then invokes the provided callable while
+    /// holding the lock. The lock is released when the callable returns, even if it exits by throwing an exception.
     /// @tparam Func The type of the callable object.
     /// @tparam Args The types of arguments to pass to the callable.
     /// @param func The lambda, function, or functor to execute.
@@ -62,11 +60,10 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     template <typename Func, typename... Args>
     auto withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
 
-    /// Attempts to execute a callable within a locked scope if the lock can
-    /// be acquired immediately.
+    /// Attempts to execute a callable within a locked scope if the lock can be acquired immediately.
     ///
-    /// Uses std::try_to_lock to attempt acquisition. If the lock is busy,
-    /// the function returns immediately without executing the callable.
+    /// Uses std::try_to_lock to attempt acquisition. If the lock is busy, the function returns immediately without
+    /// executing the callable.
     /// @tparam Func The type of the callable object.
     /// @tparam Args The types of arguments to pass to the callable.
     /// @param func The callable to execute if the lock is acquired.
@@ -84,16 +81,14 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     ///
     /// If the lock is currently owned by the calling thread, this function returns.
     ///
-    /// If the lock is unlocked or owned by a different thread, this function
-    /// asserts and terminates the process.
+    /// If the lock is unlocked or owned by a different thread, this function asserts and terminates the process.
     void assertOwner() const noexcept;
 
     ///	Asserts that the calling thread is not the current owner of the lock.
     ///
     ///	If the lock is unlocked or owned by a different thread, this function returns.
     ///
-    ///	If the lock is currently owned by the current thread, this function asserts
-    ///	and terminates the process.
+    ///	If the lock is currently owned by the current thread, this function asserts and terminates the process.
     void assertNotOwner() const noexcept;
 
   private:
