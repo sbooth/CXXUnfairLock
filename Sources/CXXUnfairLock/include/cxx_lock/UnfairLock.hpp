@@ -47,6 +47,12 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// Unlocks the lock.
     void unlock() noexcept __attribute__((release_capability()));
 
+    /// Attempts to lock the lock.
+    /// @return true if the lock was successfully locked, false if the lock was already locked.
+    [[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)));
+
+    // MARK: Scoped Locking
+
     /// Executes a callable within a locked scope.
     ///
     /// This function blocks until the lock has been successfully acquired, then invokes the provided callable while
