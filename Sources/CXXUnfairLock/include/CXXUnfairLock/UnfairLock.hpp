@@ -88,7 +88,7 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// If the lock is currently owned by the calling thread, this function returns.
     ///
     /// If the lock is unlocked or owned by a different thread, this function asserts and terminates the process.
-    void assertIsOwner() const noexcept;
+    void assertIsOwner() const noexcept __attribute__((assert_capability(this)));
 
     /// Asserts that the calling thread is not the current owner of the lock.
     ///
