@@ -88,14 +88,14 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// If the lock is currently owned by the calling thread, this function returns.
     ///
     /// If the lock is unlocked or owned by a different thread, this function asserts and terminates the process.
-    void assertOwner() const noexcept;
+    void assertIsOwner() const noexcept;
 
     /// Asserts that the calling thread is not the current owner of the lock.
     ///
     /// If the lock is unlocked or owned by a different thread, this function returns.
     ///
     /// If the lock is currently owned by the current thread, this function asserts and terminates the process.
-    void assertNotOwner() const noexcept;
+    void assertIsNotOwner() const noexcept;
 
   private:
     /// The primitive lock.
@@ -149,11 +149,11 @@ inline auto UnfairLock::tryWithLock(Func&& func, Args&&...args) noexcept(std::is
 
 // MARK: Ownership
 
-inline void UnfairLock::assertOwner() const noexcept {
+inline void UnfairLock::assertIsOwner() const noexcept {
     os_unfair_lock_assert_owner(&lock_);
 }
 
-inline void UnfairLock::assertNotOwner() const noexcept {
+inline void UnfairLock::assertIsNotOwner() const noexcept {
     os_unfair_lock_assert_not_owner(&lock_);
 }
 
