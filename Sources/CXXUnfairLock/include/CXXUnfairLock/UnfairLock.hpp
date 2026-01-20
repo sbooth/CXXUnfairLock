@@ -29,7 +29,10 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     UnfairLock() noexcept = default;
 
     UnfairLock(const UnfairLock&) = delete;
-    UnfairLock& operator=(const UnfairLock&) = delete;
+    auto operator=(const UnfairLock&) -> UnfairLock& = delete;
+
+    UnfairLock(UnfairLock&&) = delete;
+    auto operator=(UnfairLock&&) -> UnfairLock& = delete;
 
     /// Destroys the unfair lock.
     ~UnfairLock() noexcept = default;
@@ -49,7 +52,7 @@ class __attribute__((capability("mutex"))) UnfairLock final {
 
     /// Attempts to lock the lock.
     /// @return true if the lock was successfully locked, false if the lock was already locked.
-    [[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)));
+    [[nodiscard]] auto try_lock() noexcept -> bool __attribute__((try_acquire_capability(true)));
 
     // MARK: Scoped Locking
 
@@ -118,7 +121,7 @@ inline void UnfairLock::unlock() noexcept {
     os_unfair_lock_unlock(&lock_);
 }
 
-inline bool UnfairLock::try_lock() noexcept {
+inline auto UnfairLock::try_lock() noexcept -> bool {
     return os_unfair_lock_trylock(&lock_);
 }
 
@@ -126,7 +129,7 @@ inline bool UnfairLock::try_lock() noexcept {
 
 template <typename Func, typename... Args>
 inline auto UnfairLock::withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>) {
-    std::lock_guard lock{*this};
+    std::scoped_lock const lock{*this};
     return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 }
 
@@ -135,9 +138,10 @@ inline auto UnfairLock::tryWithLock(Func&& func, Args&&...args) noexcept(std::is
     using ReturnType = std::invoke_result_t<Func&&, Args&&...>;
     using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
 
-    std::unique_lock lock{*this, std::try_to_lock};
-    if (!lock)
+    std::unique_lock const lock{*this, std::try_to_lock};
+    if (!lock) {
         return ResultType{};
+    }
 
     if constexpr (std::is_void_v<ReturnType>) {
         std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
