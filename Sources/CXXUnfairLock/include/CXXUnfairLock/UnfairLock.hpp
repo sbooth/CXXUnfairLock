@@ -80,7 +80,8 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// false otherwise.
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
-    auto tryWithLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
+    auto tryWithLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>)
+          __attribute__((locks_excluded(this)));
 
     // MARK: Ownership
 
