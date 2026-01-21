@@ -67,7 +67,8 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// @return The result of the callable execution.
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
-    auto withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
+    auto withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>)
+          __attribute__((locks_excluded(this)));
 
     /// Attempts to execute a callable within a locked scope if the lock can be acquired immediately.
     ///
@@ -82,7 +83,8 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// false otherwise.
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
-    auto tryWithLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>);
+    auto tryWithLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>)
+          __attribute__((locks_excluded(this)));
 
     // MARK: Ownership
 
@@ -128,13 +130,14 @@ inline auto UnfairLock::try_lock() noexcept -> bool {
 // MARK: Scoped Locking
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>) {
-    std::scoped_lock const lock{*this};
+inline auto UnfairLock::withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>) {
+    std::lock_guard lock{*this};
     return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 }
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::tryWithLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func, Args...>) {
+inline auto UnfairLock::tryWithLock(Func&& func,
+                                    Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>) {
     using ReturnType = std::invoke_result_t<Func&&, Args&&...>;
     using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
 
