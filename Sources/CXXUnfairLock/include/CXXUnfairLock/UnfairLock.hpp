@@ -31,6 +31,9 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     UnfairLock(const UnfairLock&) = delete;
     UnfairLock& operator=(const UnfairLock&) = delete;
 
+    UnfairLock(UnfairLock&&) = delete;
+    UnfairLock& operator=(UnfairLock&&) = delete;
+
     /// Destroys the unfair lock.
     ~UnfairLock() noexcept = default;
 
