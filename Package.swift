@@ -20,10 +20,7 @@ let package = Package(
     ],
     targets: [
         .target(
-            name: "CXXUnfairLock",
-            cxxSettings: [
-                .headerSearchPath("include/CXXUnfairLock"),
-            ]
+            name: "CXXUnfairLock"
         ),
         .testTarget(
             name: "CXXUnfairLockTests",
