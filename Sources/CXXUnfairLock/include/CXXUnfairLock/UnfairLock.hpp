@@ -7,14 +7,14 @@
 
 #pragma once
 
-#import <os/availability.h>
-#import <os/lock.h>
+#include <os/availability.h>
+#include <os/lock.h>
 
-#import <functional>
-#import <mutex>
-#import <optional>
-#import <type_traits>
-#import <utility>
+#include <functional>
+#include <mutex>
+#include <optional>
+#include <type_traits>
+#include <utility>
 
 namespace CXXUnfairLock {
 
