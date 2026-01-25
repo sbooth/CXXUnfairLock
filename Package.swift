@@ -21,7 +21,7 @@ let package = Package(
     targets: [
         .target(
             name: "CXXUnfairLock",
-            cSettings: [
+            cxxSettings: [
                 .headerSearchPath("include/CXXUnfairLock"),
             ]
         ),
