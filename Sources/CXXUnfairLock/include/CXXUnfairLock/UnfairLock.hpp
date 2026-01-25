@@ -23,7 +23,7 @@ namespace CXXUnfairLock {
 /// This class may be used with std::lock_guard for a scope-based lock.
 class __attribute__((capability("mutex"))) UnfairLock final {
   public:
-    // MARK: Creation and Destruction
+    // MARK: Construction and Destruction
 
     /// Creates a new unfair lock.
     UnfairLock() noexcept = default;
