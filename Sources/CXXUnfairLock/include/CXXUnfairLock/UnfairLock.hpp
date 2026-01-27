@@ -28,11 +28,11 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// Creates a new unfair lock.
     UnfairLock() noexcept = default;
 
-    UnfairLock(const UnfairLock&)            = delete;
-    UnfairLock& operator=(const UnfairLock&) = delete;
+    UnfairLock(const UnfairLock &) = delete;
+    UnfairLock &operator=(const UnfairLock &) = delete;
 
-    UnfairLock(UnfairLock&&)            = delete;
-    UnfairLock& operator=(UnfairLock&&) = delete;
+    UnfairLock(UnfairLock &&) = delete;
+    UnfairLock &operator=(UnfairLock &&) = delete;
 
     /// Destroys the unfair lock.
     ~UnfairLock() noexcept = default;
@@ -67,7 +67,7 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// @return The result of the callable execution.
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
-    auto withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>)
+    auto withLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>)
           __attribute__((locks_excluded(this)));
 
     /// Attempts to execute a callable within a locked scope if the lock can be acquired immediately.
@@ -83,7 +83,7 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// false otherwise.
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
-    auto tryWithLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>)
+    auto tryWithLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>)
           __attribute__((locks_excluded(this)));
 
     // MARK: Ownership
@@ -111,34 +111,27 @@ class __attribute__((capability("mutex"))) UnfairLock final {
 
 // MARK: Lockable
 
-inline void UnfairLock::lock() noexcept {
-    os_unfair_lock_lock(&lock_);
-}
+inline void UnfairLock::lock() noexcept { os_unfair_lock_lock(&lock_); }
 
-inline void UnfairLock::lock(os_unfair_lock_flags_t flags) noexcept {
-    os_unfair_lock_lock_with_flags(&lock_, flags);
-}
+inline void UnfairLock::lock(os_unfair_lock_flags_t flags) noexcept { os_unfair_lock_lock_with_flags(&lock_, flags); }
 
-inline void UnfairLock::unlock() noexcept {
-    os_unfair_lock_unlock(&lock_);
-}
+inline void UnfairLock::unlock() noexcept { os_unfair_lock_unlock(&lock_); }
 
-inline bool UnfairLock::try_lock() noexcept {
-    return os_unfair_lock_trylock(&lock_);
-}
+inline bool UnfairLock::try_lock() noexcept { return os_unfair_lock_trylock(&lock_); }
 
 // MARK: Scoped Locking
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::withLock(Func&& func, Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>) {
+inline auto UnfairLock::withLock(Func &&func,
+                                 Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
     std::lock_guard lock{*this};
     return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 }
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::tryWithLock(Func&& func,
-                                    Args&&...args) noexcept(std::is_nothrow_invocable_v<Func&&, Args&&...>) {
-    using ReturnType = std::invoke_result_t<Func&&, Args&&...>;
+inline auto UnfairLock::tryWithLock(Func &&func,
+                                    Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
+    using ReturnType = std::invoke_result_t<Func &&, Args &&...>;
     using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
 
     std::unique_lock lock{*this, std::try_to_lock};
@@ -156,12 +149,8 @@ inline auto UnfairLock::tryWithLock(Func&& func,
 
 // MARK: Ownership
 
-inline void UnfairLock::assertIsOwner() const noexcept {
-    os_unfair_lock_assert_owner(&lock_);
-}
+inline void UnfairLock::assertIsOwner() const noexcept { os_unfair_lock_assert_owner(&lock_); }
 
-inline void UnfairLock::assertIsNotOwner() const noexcept {
-    os_unfair_lock_assert_not_owner(&lock_);
-}
+inline void UnfairLock::assertIsNotOwner() const noexcept { os_unfair_lock_assert_not_owner(&lock_); }
 
 } /* namespace CXXUnfairLock */
