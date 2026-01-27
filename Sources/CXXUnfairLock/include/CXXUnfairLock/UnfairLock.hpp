@@ -68,7 +68,7 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
     auto withLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>)
-          __attribute__((locks_excluded(this)));
+            __attribute__((locks_excluded(this)));
 
     /// Attempts to execute a callable within a locked scope if the lock can be acquired immediately.
     ///
@@ -84,7 +84,7 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
     auto tryWithLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>)
-          __attribute__((locks_excluded(this)));
+            __attribute__((locks_excluded(this)));
 
     // MARK: Ownership
 
