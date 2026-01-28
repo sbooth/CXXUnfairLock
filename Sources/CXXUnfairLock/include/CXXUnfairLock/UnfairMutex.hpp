@@ -77,10 +77,10 @@ class __attribute__((capability("mutex"))) UnfairMutex final {
     /// mutex is already locked, the function returns immediately without executing the callable.
     /// @tparam Func The type of the callable object.
     /// @tparam Args The types of arguments to pass to the callable.
-    /// @param func The callable to execute if the lock is acquired.
+    /// @param func The callable to execute if the mutex is acquired.
     /// @param args Arguments to be perfectly forwarded to the callable.
-    /// @return For non-void functions, a std::optional containing the result of func if the lock was acquired, or
-    /// std::nullopt otherwise; for void functions, a bool that is true if the lock was acquired and func executed,
+    /// @return For non-void functions, a std::optional containing the result of func if the mutex was acquired, or
+    /// std::nullopt otherwise; for void functions, a bool that is true if the mutex was acquired and func executed,
     /// false otherwise.
     /// @throw Any exception thrown by the callable.
     template <typename Func, typename... Args>
