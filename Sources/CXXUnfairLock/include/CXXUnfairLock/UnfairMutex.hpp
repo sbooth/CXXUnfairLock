@@ -21,45 +21,45 @@ namespace CXXUnfairLock {
 /// A wrapper around os_unfair_lock satisfying the Lockable requirements.
 ///
 /// This class may be used with std::lock_guard for a scope-based lock.
-class __attribute__((capability("mutex"))) UnfairLock final {
+class __attribute__((capability("mutex"))) UnfairMutex final {
   public:
     // MARK: Construction and Destruction
 
-    /// Creates a new unfair lock.
-    UnfairLock() noexcept = default;
+    /// Creates a new unfair mutex.
+    UnfairMutex() noexcept = default;
 
-    UnfairLock(const UnfairLock &) = delete;
-    UnfairLock &operator=(const UnfairLock &) = delete;
+    UnfairMutex(const UnfairMutex &) = delete;
+    UnfairMutex &operator=(const UnfairMutex &) = delete;
 
-    UnfairLock(UnfairLock &&) = delete;
-    UnfairLock &operator=(UnfairLock &&) = delete;
+    UnfairMutex(UnfairMutex &&) = delete;
+    UnfairMutex &operator=(UnfairMutex &&) = delete;
 
-    /// Destroys the unfair lock.
-    ~UnfairLock() noexcept = default;
+    /// Destroys the unfair mutex.
+    ~UnfairMutex() noexcept = default;
 
     // MARK: Lockable
 
-    /// Locks the lock.
+    /// Locks the mutex.
     void lock() noexcept __attribute__((acquire_capability()));
 
-    /// Locks the lock.
+    /// Locks the mutex.
     /// @param flags Flags to alter the behavior of the lock.
     void lock(os_unfair_lock_flags_t flags) noexcept __attribute__((acquire_capability()))
     API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0));
 
-    /// Unlocks the lock.
+    /// Unlocks the mutex.
     void unlock() noexcept __attribute__((release_capability()));
 
-    /// Attempts to lock the lock.
-    /// @return true if the lock was successfully locked, false if the lock was already locked.
+    /// Attempts to lock the mutex.
+    /// @return true if the mutex was successfully acquired, false if the mutex was already locked.
     [[nodiscard]] bool try_lock() noexcept __attribute__((try_acquire_capability(true)));
 
     // MARK: Scoped Locking
 
     /// Executes a callable within a locked scope.
     ///
-    /// This function blocks until the lock has been successfully acquired, then invokes the provided callable while
-    /// holding the lock. The lock is released when the callable returns, even if it exits by throwing an exception.
+    /// Acquires the mutex, blocking until it becomes available, then invokes the provided callable while holding the
+    /// mutex. The mutex is released when the callable finishes, including if it exits by throwing an exception.
     /// @tparam Func The type of the callable object.
     /// @tparam Args The types of arguments to pass to the callable.
     /// @param func The lambda, function, or functor to execute.
@@ -70,10 +70,11 @@ class __attribute__((capability("mutex"))) UnfairLock final {
     auto withLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>)
             __attribute__((locks_excluded(this)));
 
-    /// Attempts to execute a callable within a locked scope if the lock can be acquired immediately.
+    /// Attempts to execute a callable within a locked scope without blocking.
     ///
-    /// Uses std::try_to_lock to attempt acquisition. If the lock is busy, the function returns immediately without
-    /// executing the callable.
+    /// Attempts to acquire the mutex without blocking. If acquisition succeeds, the callable is invoked while holding
+    /// the mutex, which is released when the callable finishes, including if it exits by throwing an exception. If the
+    /// mutex is already locked, the function returns immediately without executing the callable.
     /// @tparam Func The type of the callable object.
     /// @tparam Args The types of arguments to pass to the callable.
     /// @param func The callable to execute if the lock is acquired.
@@ -88,22 +89,22 @@ class __attribute__((capability("mutex"))) UnfairLock final {
 
     // MARK: Ownership
 
-    /// Asserts that the calling thread is the current owner of the lock.
+    /// Asserts that the calling thread is the current owner of the mutex.
     ///
-    /// If the lock is currently owned by the calling thread, this function returns.
+    /// If the mutex is currently owned by the calling thread, this function returns.
     ///
-    /// If the lock is unlocked or owned by a different thread, this function asserts and terminates the process.
+    /// If the mutex is unlocked or owned by a different thread, this function asserts and terminates the process.
     void assertIsOwner() const noexcept __attribute__((assert_capability(this)));
 
-    /// Asserts that the calling thread is not the current owner of the lock.
+    /// Asserts that the calling thread is not the current owner of the mutex.
     ///
-    /// If the lock is unlocked or owned by a different thread, this function returns.
+    /// If the mutex is unlocked or owned by a different thread, this function returns.
     ///
-    /// If the lock is currently owned by the current thread, this function asserts and terminates the process.
+    /// If the mutex is currently owned by the current thread, this function asserts and terminates the process.
     void assertIsNotOwner() const noexcept;
 
   private:
-    /// The primitive lock.
+    /// The locking primitive.
     os_unfair_lock lock_{OS_UNFAIR_LOCK_INIT};
 };
 
@@ -111,26 +112,26 @@ class __attribute__((capability("mutex"))) UnfairLock final {
 
 // MARK: Lockable
 
-inline void UnfairLock::lock() noexcept { os_unfair_lock_lock(&lock_); }
+inline void UnfairMutex::lock() noexcept { os_unfair_lock_lock(&lock_); }
 
-inline void UnfairLock::lock(os_unfair_lock_flags_t flags) noexcept { os_unfair_lock_lock_with_flags(&lock_, flags); }
+inline void UnfairMutex::lock(os_unfair_lock_flags_t flags) noexcept { os_unfair_lock_lock_with_flags(&lock_, flags); }
 
-inline void UnfairLock::unlock() noexcept { os_unfair_lock_unlock(&lock_); }
+inline void UnfairMutex::unlock() noexcept { os_unfair_lock_unlock(&lock_); }
 
-inline bool UnfairLock::try_lock() noexcept { return os_unfair_lock_trylock(&lock_); }
+inline bool UnfairMutex::try_lock() noexcept { return os_unfair_lock_trylock(&lock_); }
 
 // MARK: Scoped Locking
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::withLock(Func &&func,
-                                 Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
+inline auto UnfairMutex::withLock(Func &&func,
+                                  Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
     std::lock_guard lock{*this};
     return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 }
 
 template <typename Func, typename... Args>
-inline auto UnfairLock::tryWithLock(Func &&func,
-                                    Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
+inline auto UnfairMutex::tryWithLock(Func &&func,
+                                     Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
     using ReturnType = std::invoke_result_t<Func &&, Args &&...>;
     using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
 
@@ -149,8 +150,8 @@ inline auto UnfairLock::tryWithLock(Func &&func,
 
 // MARK: Ownership
 
-inline void UnfairLock::assertIsOwner() const noexcept { os_unfair_lock_assert_owner(&lock_); }
+inline void UnfairMutex::assertIsOwner() const noexcept { os_unfair_lock_assert_owner(&lock_); }
 
-inline void UnfairLock::assertIsNotOwner() const noexcept { os_unfair_lock_assert_not_owner(&lock_); }
+inline void UnfairMutex::assertIsNotOwner() const noexcept { os_unfair_lock_assert_not_owner(&lock_); }
 
 } /* namespace CXXUnfairLock */
