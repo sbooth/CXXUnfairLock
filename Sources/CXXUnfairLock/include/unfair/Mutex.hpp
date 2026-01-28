@@ -58,8 +58,8 @@ class __attribute__((capability("mutex"))) Mutex final {
 
     /// Executes a callable within a locked scope.
     ///
-    /// This function blocks until the mutex has been successfully locked, then invokes the provided callable while
-    /// holding the mutex. The mutex is unlocked when the callable returns, even if it exits by throwing an exception.
+    /// Acquires the mutex, blocking until it becomes available, then invokes the provided callable while holding the
+    /// mutex. The mutex is released when the callable finishes, including if it exits by throwing an exception.
     /// @tparam Func The type of the callable object.
     /// @tparam Args The types of arguments to pass to the callable.
     /// @param func The lambda, function, or functor to execute.
@@ -70,10 +70,11 @@ class __attribute__((capability("mutex"))) Mutex final {
     auto withLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>)
             __attribute__((locks_excluded(this)));
 
-    /// Attempts to execute a callable within a locked scope if the mutex can be locked immediately.
+    /// Attempts to execute a callable within a locked scope without blocking.
     ///
-    /// Uses std::try_to_lock to attempt acquisition. If the mutex is already locked, the function returns immediately
-    /// without executing the callable.
+    /// Attempts to acquire the mutex without blocking. If acquisition succeeds, the callable is invoked while holding
+    /// the mutex, which is released when the callable finishes, including if it exits by throwing an exception. If the
+    /// mutex is already locked, the function returns immediately without executing the callable.
     /// @tparam Func The type of the callable object.
     /// @tparam Args The types of arguments to pass to the callable.
     /// @param func The callable to execute if the lock is acquired.
