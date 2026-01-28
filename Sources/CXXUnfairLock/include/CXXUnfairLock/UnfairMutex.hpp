@@ -43,7 +43,7 @@ class __attribute__((capability("mutex"))) UnfairMutex final {
     void lock() noexcept __attribute__((acquire_capability()));
 
     /// Locks the mutex.
-    /// @param flags Flags to alter the behavior of the lock.
+    /// @param flags Flags to alter the behavior of the os_unfair_lock.
     void lock(os_unfair_lock_flags_t flags) noexcept __attribute__((acquire_capability()))
     API_AVAILABLE(macos(15.0), ios(18.0), tvos(18.0), watchos(11.0), visionos(2.0));
 
