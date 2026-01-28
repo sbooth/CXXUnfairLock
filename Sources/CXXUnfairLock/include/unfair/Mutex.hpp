@@ -122,15 +122,13 @@ inline bool Mutex::try_lock() noexcept { return os_unfair_lock_trylock(&lock_); 
 // MARK: Scoped Locking
 
 template <typename Func, typename... Args>
-inline auto Mutex::withLock(Func &&func,
-                                 Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
+inline auto Mutex::withLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
     std::lock_guard lock{*this};
     return std::invoke(std::forward<Func>(func), std::forward<Args>(args)...);
 }
 
 template <typename Func, typename... Args>
-inline auto Mutex::tryWithLock(Func &&func,
-                                    Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
+inline auto Mutex::tryWithLock(Func &&func, Args &&...args) noexcept(std::is_nothrow_invocable_v<Func &&, Args &&...>) {
     using ReturnType = std::invoke_result_t<Func &&, Args &&...>;
     using ResultType = std::conditional_t<std::is_void_v<ReturnType>, bool, std::optional<ReturnType>>;
 
