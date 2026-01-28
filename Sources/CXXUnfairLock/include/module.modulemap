@@ -7,6 +7,6 @@
 
 module CXXUnfairLock {
     requires cplusplus17
-    header "unfair/UnfairLock.hpp"
+    header "unfair/Mutex.hpp"
     export *
 }
