@@ -9,5 +9,5 @@ import Testing
 @testable import CXXUnfairLock
 
 @Test func example() async throws {
-//    let mutex = CXXUnfairLock.UnfairMutex()
+//    let mutex = mtx.UnfairMutex()
 }

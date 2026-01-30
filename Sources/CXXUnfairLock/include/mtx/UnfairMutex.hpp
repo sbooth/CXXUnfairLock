@@ -16,7 +16,7 @@
 #include <type_traits>
 #include <utility>
 
-namespace CXXUnfairLock {
+namespace mtx {
 
 /// A wrapper around os_unfair_lock satisfying the Lockable requirements.
 ///
@@ -154,4 +154,4 @@ inline void UnfairMutex::assertIsOwner() const noexcept { os_unfair_lock_assert_
 
 inline void UnfairMutex::assertIsNotOwner() const noexcept { os_unfair_lock_assert_not_owner(&lock_); }
 
-} /* namespace CXXUnfairLock */
+} /* namespace mtx */
